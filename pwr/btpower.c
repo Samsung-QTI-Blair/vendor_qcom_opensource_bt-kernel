@@ -309,6 +309,8 @@ static struct class *bt_class;
 static int bt_major;
 static int soc_id;
 static bool probe_finished;
+struct mutex pwr_release;
+
 static void bt_power_vote(struct work_struct *work);
 
 static struct {
@@ -1621,20 +1623,21 @@ static int bt_power_probe(struct platform_device *pdev)
 	return 0;
 
 free_pdata:
+	mutex_lock(&pwr_release);
 	kfree(pwr_data);
+	mutex_unlock(&pwr_release);
 	return ret;
 }
 
 static int bt_power_remove(struct platform_device *pdev)
 {
+	mutex_lock(&pwr_release);
 	dev_dbg(&pdev->dev, "%s\n", __func__);
-
 	probe_finished = false;
 	btpower_rfkill_remove(pdev);
 	bt_power_vreg_put();
-
 	kfree(pwr_data);
-
+	mutex_unlock(&pwr_release);
 	return 0;
 }
 
@@ -1661,8 +1664,10 @@ EXPORT_SYMBOL(btpower_get_chipset_version);
 static void set_pwr_srcs_status (struct vreg_data *handle, int core_type) {
 	int power_src_state;
 
-	if (!handle)
+	if (!handle) {
 		pr_err("%s: invalid handler received \n", __func__);
+		return;
+	}
 
 	if (handle->is_enabled)
 		power_src_state = (int)regulator_get_voltage(handle->reg);
@@ -2512,6 +2517,9 @@ static long bt_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
 static int bt_power_release(struct inode *inode, struct file *file)
 {
+
+	mutex_lock(&pwr_release);
+
 	if (!pwr_data || !probe_finished) {
 		pr_err("%s: BTPower Probing Pending.Try Again\n", __func__);
 		return -EAGAIN;
@@ -2559,6 +2567,7 @@ static int bt_power_release(struct inode *inode, struct file *file)
 */
 		}
 	}
+	mutex_unlock(&pwr_release);
 	return 0;
 }
 
@@ -2603,12 +2612,13 @@ static int __init btpower_init(void)
 		goto class_err;
 	}
 
-
 	if (device_create(bt_class, NULL, MKDEV(bt_major, 0),
 		NULL, "btpower") == NULL) {
 		pr_err("%s: failed to allocate char dev\n", __func__);
 		goto device_err;
 	}
+
+	mutex_init(&pwr_release);
 	return 0;
 
 device_err:
