@@ -31,7 +31,7 @@ LOCAL_MODULE_KO_DIRS += btfmcodec/btfmcodec.ko
 LOCAL_MODULE_KO_DIRS += soundwire/bt_fm_swr.ko
 endif
 LOCAL_MODULE_KO_DIRS += slimbus/bt_fm_slim.ko
-ifneq ($(call is-board-platform-in-list, niobe anorak61 neo61 pitti seraph tlair), true)
+ifneq ($(call is-board-platform-in-list, niobe anorak61 neo61 pitti seraph blair), true)
 LOCAL_MODULE_KO_DIRS += rtc6226/radio-i2c-rtc6226-qca.ko
 endif
 
