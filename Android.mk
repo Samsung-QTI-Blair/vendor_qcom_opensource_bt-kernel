@@ -93,7 +93,7 @@ LOCAL_MODULE_DEBUG_ENABLE := true
 LOCAL_MODULE_PATH         := $(KERNEL_MODULES_OUT)
 include $(DLKM_DIR)/Build_external_kernelmodule.mk
 
-ifneq ($(call is-board-platform-in-list, niobe anorak61 neo61 pitti), true)
+ifneq ($(call is-board-platform-in-list, niobe anorak61 neo61 pitti taro blair kalama), true)
 ################################ BTFM CODEC Driver #########################
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES           := $(BT_SRC_FILES)
@@ -123,6 +123,7 @@ LOCAL_MODULE_DEBUG_ENABLE := true
 LOCAL_MODULE_PATH         := $(KERNEL_MODULES_OUT)
 include $(DLKM_DIR)/Build_external_kernelmodule.mk
 ################################ rtc6226 ################################
+ifneq ($(call is-board-platform-in-list, niobe anorak61 neo61 pitti seraph blair), true)
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES           := $(BT_SRC_FILES)
 LOCAL_MODULE              := radio-i2c-rtc6226-qca.ko
@@ -131,6 +132,7 @@ LOCAL_MODULE_TAGS         := optional
 LOCAL_MODULE_DEBUG_ENABLE := true
 LOCAL_MODULE_PATH         := $(KERNEL_MODULES_OUT)
 include $(DLKM_DIR)/Build_external_kernelmodule.mk
+endif
 ###########################################################
 
 endif # DLKM check
